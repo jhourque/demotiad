@@ -1,0 +1,2 @@
+DIR=`basename $PWD`
+terraform init -backend-config="key=$DIR.tfstate"

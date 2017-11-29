@@ -1,0 +1,5 @@
+*.pyc
+.terraform
+terraform.tfstate*
+terraform.backup
+*.swp
