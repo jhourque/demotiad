@@ -8,14 +8,24 @@ variable "cidr_block" {
   type    = "string"
 }
 
-variable "subnet_bits" {
+variable "subnet_public_block" {
   type    = "string"
-  default = "8"
 }
 
-variable "subnet_prv_offset" {
+variable "subnet_private_block" {
   type    = "string"
-  default = "128"
+}
+
+# number of bit required to split cidr
+variable "splitnum" {
+  type    = "map"
+  default = {
+    "1" = "0"
+    "2" = "1"
+    "3" = "2"
+    "4" = "2"
+    "5" = "3"
+  }
 }
 
 variable "vpc_name" {
@@ -41,11 +51,11 @@ resource "aws_vpc" "main" {
   }
 }
 
+# Split subnet_public_block for each azs
 resource "aws_subnet" "public" {
   vpc_id     = "${aws_vpc.main.id}"
   count      = "${length(data.aws_availability_zones.available.names)}"
-  cidr_block = "${cidrsubnet(var.cidr_block, var.subnet_bits, count.index) }"
-
+  cidr_block = "${cidrsubnet(var.subnet_public_block, var.splitnum[length(data.aws_availability_zones.available.names)], count.index)}"
   availability_zone       = "${element(data.aws_availability_zones.available.names,count.index)}"
   map_public_ip_on_launch = "true"
 
@@ -57,8 +67,7 @@ resource "aws_subnet" "public" {
 resource "aws_subnet" "private" {
   vpc_id     = "${aws_vpc.main.id}"
   count      = "${length(data.aws_availability_zones.available.names)}"
-  cidr_block = "${cidrsubnet(var.cidr_block, var.subnet_bits, var.subnet_prv_offset +count.index) }"
-
+  cidr_block = "${cidrsubnet(var.subnet_private_block, var.splitnum[length(data.aws_availability_zones.available.names)], count.index)}"
   availability_zone       = "${element(data.aws_availability_zones.available.names,count.index)}"
   map_public_ip_on_launch = "false"
 

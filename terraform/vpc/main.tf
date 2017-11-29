@@ -6,6 +6,14 @@ variable "cidr_block" {
   type = "string"
 }
 
+variable "subnet_public_block" {
+  type = "string"
+}
+
+variable "subnet_private_block" {
+  type = "string"
+}
+
 variable "vpc_name" {
   type = "string"
 }
@@ -19,11 +27,13 @@ provider "aws" {
 }
 
 module "base_network" {
-  source         = "../modules/base_network"
-  region         = "${var.region}"
-  cidr_block     = "${var.cidr_block}"
-  vpc_name       = "${var.vpc_name}"
-  vpc_short_name = "${var.domain}"
+  source               = "../modules/base_network"
+  region               = "${var.region}"
+  cidr_block           = "${var.cidr_block}"
+  subnet_public_block  = "${var.subnet_public_block}"
+  subnet_private_block = "${var.subnet_private_block}"
+  vpc_name             = "${var.vpc_name}"
+  vpc_short_name       = "${var.domain}"
 }
 
 module "private_dns" {

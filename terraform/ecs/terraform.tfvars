@@ -1,0 +1,5 @@
+region = "eu-west-1"
+state_bucket = "tiademo-tfstate"
+vpc_state_key = "vpc"
+consul_state_key = "consul"
+key_name = "aws-tiadev"
