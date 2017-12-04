@@ -250,7 +250,6 @@ module "ecs_servers" {
 
   source          = "../instances"
   ami_id          = "${data.aws_ami.ecs.id}"
-  name            = "${var.ecs_servers}"
   name            = "${slice(var.ecs_servers, 0, length(var.subnets))}"
   type            = "${var.ecs_server_type}"
   key             = "${var.ecs_key}"
@@ -285,7 +284,7 @@ resource "aws_cloudwatch_log_group" "ecs" {
 }
 
 output cluster { value = "${var.cluster_name}" }
-output cluster_nodes { value = "${module.ecs_servers.id}" }
+output cluster_nodes { value = "${slice(var.ecs_servers, 0, length(var.subnets))}" }
 output efs_mount_point { value = "${var.efs_mount_point}" }
 output log_group { value = "${var.cluster_name}" }
 output sg_cluster_access { value = "${aws_security_group.cluster_access.id}" }
