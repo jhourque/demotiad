@@ -1,0 +1,7 @@
+{
+    "aws_distribution_user":"admin",
+    "aws_source_ami":"ami-5900cc36",
+    "distribution":"debian",
+    "role":"consul",
+    "consul_version":"0.7.0"
+}

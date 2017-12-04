@@ -62,12 +62,13 @@ data "template_file" "user_data" {
   }
 }
 
+# Create instances on subnets (Round Robin)
 resource "aws_instance" "instance" {
-  count = "${length(var.name)}"
+  count                  = "${length(var.name)}"
   ami                    = "${var.ami_id}"
   instance_type          = "${var.type}"
   key_name               = "${var.key}"
-  subnet_id              = "${var.subnet[count.index]}"
+  subnet_id              = "${element(var.subnet, count.index % length(var.name))}"
   vpc_security_group_ids = ["${var.security_groups}"]
   user_data              = "${data.template_file.user_data.*.rendered[count.index]}\n${var.user_data}"
 

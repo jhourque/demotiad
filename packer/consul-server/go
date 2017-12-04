@@ -1,0 +1,1 @@
+packer build -var-file=debian.params.json consul.json

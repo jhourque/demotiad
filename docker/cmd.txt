@@ -1,0 +1,22 @@
+cd ../terraform/repo
+vote=$(terraform output ecr_vote_url)
+dynnginx=$(terraform output ecr_dynnginx_url)
+dynhaproxy=$(terraform output ecr_dynhaproxy_url)
+cd -
+
+docker build -t demotiad/vote:0.1 --build-arg version=0.1 vote
+docker build -t demotiad/dynnginx dynnginx
+docker build -t demotiad/dynhaproxy dynhaproxy
+
+docker tag demotiad/vote:0.1 demotiad/vote:latest
+
+docker tag demotiad/vote:0.1 ${vote}:0.1
+docker tag demotiad/vote:latest ${vote}:latest
+docker tag demotiad/dynnginx:latest ${dynnginx}:latest
+docker tag demotiad/dynhaproxy:latest ${dynhaproxy}:latest
+
+$(aws ecr get-login | sed "s/-e none//")
+docker push ${vote}:0.1
+docker push ${vote}:latest
+docker push ${dynnginx}:latest
+docker push ${dynhaproxy}:latest

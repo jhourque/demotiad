@@ -1,0 +1,47 @@
+events {
+    worker_connections  4096;  ## Default: 1024
+}
+
+http {
+
+    map $http_x_color $color {
+        {{ $color := key_or_default "routes/vote" "blue" -}}
+        default "{{ if or (eq $color "blue") (eq $color "green") }}{{ $color }}{{ else }}blue{{ end }}";
+        "green" "green";
+        "blue" "blue";
+    }
+
+
+    {{- with service "voteblue" }}
+    upstream blue {
+        {{- range service "voteblue" }}
+        server {{.Address}}:{{.Port}};{{end}}
+    }
+    {{ end }}
+
+    {{- with service "votegreen" }}
+    upstream green {
+        {{- range service "votegreen" }}
+        server {{.Address}}:{{.Port}};{{end}}
+    }
+    {{ end }}
+
+    server {
+        location / {
+            if ($color = "blue") {
+                {{ with service "voteblue" -}}
+                proxy_pass http://blue;
+                {{- else -}}
+                root /usr/share/nginx/html/;
+                {{- end }}
+            }
+            if ($color = "green") {
+                {{ with service "votegreen" -}}
+                proxy_pass http://green;
+                {{- else -}}
+                root /usr/share/nginx/html/;
+                {{- end }}
+            }
+        }
+    }
+}
