@@ -75,7 +75,7 @@ dynhaproxy=$(terraform output ecr_dynhaproxy_url)
 cd -
 
 # Build images
-docker build -t demotiad/vote:0.1 --build-arg version=0.1 vote
+docker build -t demotiad/vote:0.1 --build-arg version=0.1 docker/vote
 docker build -t demotiad/dynnginx dynnginx
 docker build -t demotiad/dynhaproxy dynhaproxy
 
