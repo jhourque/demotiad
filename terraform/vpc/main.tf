@@ -6,14 +6,6 @@ variable "cidr_block" {
   type = "string"
 }
 
-variable "subnet_public_block" {
-  type = "string"
-}
-
-variable "subnet_private_block" {
-  type = "string"
-}
-
 variable "vpc_name" {
   type = "string"
 }
@@ -30,8 +22,8 @@ module "base_network" {
   source               = "../modules/base_network"
   region               = "${var.region}"
   cidr_block           = "${var.cidr_block}"
-  subnet_public_block  = "${var.subnet_public_block}"
-  subnet_private_block = "${var.subnet_private_block}"
+  subnet_public_block  = "${cidrsubnet(var.cidr_block, 1, 0)}"
+  subnet_private_block = "${cidrsubnet(var.cidr_block, 1, 1)}"
   vpc_name             = "${var.vpc_name}"
   vpc_short_name       = "${var.domain}"
 }

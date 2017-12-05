@@ -2,14 +2,6 @@ variable "region" {
   type = "string"
 }
 
-variable "state_bucket" {
-  type = "string"
-}
-
-variable "ecs_state_key" {
-  type = "string"
-}
-
 variable "voteapp_repo" {
   type    = "string"
   default = "demotiad/vote"
@@ -28,6 +20,14 @@ variable "color" {
   type = "string"
 }
 
+variable "log_group" {
+  type = "string"
+}
+
+variable "cluster" {
+  type = "string"
+}
+
 variable "bridge_ip" {
   type    = "string"
   default = "172.17.0.1"
@@ -39,16 +39,6 @@ provider "aws" {
 
 data "aws_caller_identity" "current" {}
 
-data "terraform_remote_state" "ecs" {
-  backend = "s3"
-
-  config {
-    bucket = "${var.state_bucket}"
-    key    = "${var.ecs_state_key}"
-    region = "${var.region}"
-  }
-}
-
 data "template_file" "voteapp" {
   template = "${file("${path.module}/files/voteapp.tpl.json")}"
 
@@ -59,7 +49,7 @@ data "template_file" "voteapp" {
     TF_TAG       = "${var.voteapp_tag}"
     TF_BRIDGE_IP = "${var.bridge_ip}"
     TF_COLOR     = "${var.color}"
-    TF_LOG_GROUP = "${data.terraform_remote_state.ecs.log_group}"
+    TF_LOG_GROUP = "${var.log_group}"
   }
 }
 
@@ -70,7 +60,7 @@ resource "aws_ecs_task_definition" "voteapp" {
 
 resource "aws_ecs_service" "voteapp" {
   name            = "voteapp${var.color}"
-  cluster         = "${data.terraform_remote_state.ecs.cluster}"
+  cluster         = "${var.cluster}"
   task_definition = "${aws_ecs_task_definition.voteapp.arn}"
   desired_count   = "${var.voteapp_count}"
 }
