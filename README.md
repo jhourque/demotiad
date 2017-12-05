@@ -146,6 +146,8 @@ In terraform/app/backends
 terraform apply
 ```
 
+Check vote_url UI (output of backends)
+
 ### Deploy Blue & Green frontends
 In terraform/app/frontends/blue
 ```
@@ -158,20 +160,51 @@ In terraform/app/frontends/green
 terraform apply
 ```
 
+Refresh vote_url, the app is deployed
+
 ## How to play with demo
 
 ### Switch Blue <-> Green
+2 solutions:
 ```
+Add following header in your browser (many plugins allow to modify header):
+  - X-Color=blue
+Or
+  - X-Color=green
 ```
+
+```
+Add routes/vote key value in consul set to "blue" or "green"
+```
+<img src="images/consul_key.jpg" alt="website" width="250">
 
 ### Modify & Deploy new app version
 ```
+# Update docker/vote/templates/index.html then
+
+cd terraform/repo
+vote=$(terraform output ecr_vote_url)
+cd -
+
+# Build images
+docker build -t demotiad/vote:0.2 --build-arg version=0.2 docker/vote
+
+# Tag images
+docker tag demotiad/vote:0.2 demotiad/vote:latest
+docker tag demotiad/vote:0.2 ${vote}:0.2
+docker tag demotiad/vote:latest ${vote}:latest
+
+# Push images to repo
+$(aws ecr get-login | sed "s/-e none//")
+docker push ${vote}:0.2
+docker push ${vote}:latest
 ```
 
 ### Upgrade Green
+In terraform/app/frontends/green
 ```
+terraform apply
 ```
 
 ### Switch frontend and see new version
-```
-```
+<img src="images/consul_key_green.jpg" alt="website" width="250">
