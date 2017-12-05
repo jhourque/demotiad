@@ -1,23 +1,24 @@
 variable bastion_ami {
-    type = "map"
-    default {
-       distrib = "debian"
-       version = "debian-8"
-    }
+  type = "map"
+
+  default {
+    distrib = "debian"
+    version = "debian-8"
+  }
 }
 
 variable bastion_instance_type {
-    type = "string"
-    default = "t2.micro"
+  type    = "string"
+  default = "t2.micro"
 }
 
 variable "bastion_name" {
-  type = "string"
+  type    = "string"
   default = "bastion"
 }
 
 variable "bastion_ttl" {
-  type = "string"
+  type    = "string"
   default = "300"
 }
 
@@ -27,7 +28,7 @@ resource "aws_key_pair" "tiad_keypair" {
 }
 
 module "ami" {
-  source         = "../modules/ami"
+  source = "../modules/ami"
 }
 
 data "aws_ami" "bastion" {
@@ -44,7 +45,6 @@ data "aws_ami" "bastion" {
   }
 
   owners = "${list(module.ami.owners[var.bastion_ami["distrib"]])}"
-
 }
 
 module "bastion" {
@@ -68,5 +68,5 @@ resource "aws_eip" "bastion" {
 }
 
 output "bastion_ip" {
-   value = "${aws_eip.bastion.public_ip}"
+  value = "${aws_eip.bastion.public_ip}"
 }

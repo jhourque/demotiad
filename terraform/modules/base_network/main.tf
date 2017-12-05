@@ -5,20 +5,21 @@
 variable "region" {}
 
 variable "cidr_block" {
-  type    = "string"
+  type = "string"
 }
 
 variable "subnet_public_block" {
-  type    = "string"
+  type = "string"
 }
 
 variable "subnet_private_block" {
-  type    = "string"
+  type = "string"
 }
 
 # number of bit required to split cidr
 variable "splitnum" {
-  type    = "map"
+  type = "map"
+
   default = {
     "1" = "0"
     "2" = "1"
@@ -37,9 +38,7 @@ provider "aws" {
   region = "${var.region}"
 }
 
-
-data "aws_availability_zones" "available" {
-}
+data "aws_availability_zones" "available" {}
 
 resource "aws_vpc" "main" {
   cidr_block           = "${var.cidr_block}"
@@ -53,9 +52,9 @@ resource "aws_vpc" "main" {
 
 # Split subnet_public_block for each azs
 resource "aws_subnet" "public" {
-  vpc_id     = "${aws_vpc.main.id}"
-  count      = "${length(data.aws_availability_zones.available.names)}"
-  cidr_block = "${cidrsubnet(var.subnet_public_block, var.splitnum[length(data.aws_availability_zones.available.names)], count.index)}"
+  vpc_id                  = "${aws_vpc.main.id}"
+  count                   = "${length(data.aws_availability_zones.available.names)}"
+  cidr_block              = "${cidrsubnet(var.subnet_public_block, var.splitnum[length(data.aws_availability_zones.available.names)], count.index)}"
   availability_zone       = "${element(data.aws_availability_zones.available.names,count.index)}"
   map_public_ip_on_launch = "true"
 
@@ -65,9 +64,9 @@ resource "aws_subnet" "public" {
 }
 
 resource "aws_subnet" "private" {
-  vpc_id     = "${aws_vpc.main.id}"
-  count      = "${length(data.aws_availability_zones.available.names)}"
-  cidr_block = "${cidrsubnet(var.subnet_private_block, var.splitnum[length(data.aws_availability_zones.available.names)], count.index)}"
+  vpc_id                  = "${aws_vpc.main.id}"
+  count                   = "${length(data.aws_availability_zones.available.names)}"
+  cidr_block              = "${cidrsubnet(var.subnet_private_block, var.splitnum[length(data.aws_availability_zones.available.names)], count.index)}"
   availability_zone       = "${element(data.aws_availability_zones.available.names,count.index)}"
   map_public_ip_on_launch = "false"
 

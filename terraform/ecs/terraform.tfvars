@@ -1,5 +1,1 @@
-region = "eu-central-1"
-state_bucket = "tiad-tfstate"
-vpc_state_key = "vpc.tfstate"
-consul_state_key = "consul.tfstate"
-key_name = "aws-tiadev"
+../common/terraform.tfvars

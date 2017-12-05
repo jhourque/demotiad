@@ -27,73 +27,75 @@ variable "sg_admin" {
 }
 
 variable "cluster_id" {
-  type = "string"
-  default ="consul"
+  type    = "string"
+  default = "consul"
 }
 
 variable "cluster_name" {
-  type = "string"
-  default ="Consul"
+  type    = "string"
+  default = "Consul"
 }
 
 variable "consul_servers" {
-  type = "list"
-  default = ["consul0","consul1", "consul2"]
+  type    = "list"
+  default = ["consul0", "consul1", "consul2"]
 }
 
 variable "consul_version" {
-  type = "string"
+  type    = "string"
   default = "0.7.0"
 }
+
 variable "consul_ami_basename" {
-  type = "string"
+  type    = "string"
   default = "consul-debian-*"
 }
 
 variable "consul_server_type" {
-  type = "string"
+  type    = "string"
   default = "t2.micro"
 }
 
 variable "consul_key" {}
 
 variable "consul_servers_tcp" {
-  type = "list"
-  default = [ "8300", "8301", "8302" ]
+  type    = "list"
+  default = ["8300", "8301", "8302"]
 }
 
 variable "consul_servers_udp" {
-  type = "list"
-  default = [ "8301", "8302" ]
+  type    = "list"
+  default = ["8301", "8302"]
 }
 
 variable "consul_clients_tcp" {
-  type = "list"
-  default = ["8500","8600"]
+  type    = "list"
+  default = ["8500", "8600"]
 }
 
 variable "consul_clients_udp" {
-  type = "list"
+  type    = "list"
   default = ["8600"]
 }
 
 variable "ttl" {
-  type = "string"
+  type    = "string"
   default = "300"
 }
 
 data "aws_ami" "consul" {
   most_recent = true
+
   filter {
-    name = "name"
+    name   = "name"
     values = "${list(var.consul_ami_basename)}"
   }
+
   filter {
-    name = "tag:ConsulVersion"
+    name   = "tag:ConsulVersion"
     values = "${list(var.consul_version)}"
   }
 }
-
 
 resource "aws_security_group" "consul_client" {
   name        = "${var.cluster_id}-client"
@@ -176,14 +178,14 @@ resource "aws_security_group_rule" "consul_admin_udp" {
 }
 
 module "consul_servers" {
-  source = "../instances"
-  ami_id= "${data.aws_ami.consul.id}"
-  name = "${var.consul_servers}"
-  type = "${var.consul_server_type}"
-  key  = "${var.consul_key}"
-  subnet = "${var.subnets}"
+  source          = "../instances"
+  ami_id          = "${data.aws_ami.consul.id}"
+  name            = "${var.consul_servers}"
+  type            = "${var.consul_server_type}"
+  key             = "${var.consul_key}"
+  subnet          = "${var.subnets}"
   security_groups = "${list(var.sg_ssh,aws_security_group.consul.id)}"
-  user_data = "${data.template_file.consul_config.rendered}"
+  user_data       = "${data.template_file.consul_config.rendered}"
 
   private_zone_id = "${var.private_host_zone}"
   reverse_zone_id = "${var.private_host_zone_reverse}"
@@ -197,7 +199,7 @@ data "template_file" "consul_config" {
     TF_CONSUL_SERVERS = "${join(",",var.consul_servers)}"
     TF_CONSUL_ROLE    = "server"
     TF_CONSUL_OPTIONS = ""
-    TF_CONSUL_PUBLIC = "yes"
+    TF_CONSUL_PUBLIC  = "yes"
   }
 }
 

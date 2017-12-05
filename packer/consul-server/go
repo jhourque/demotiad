@@ -1,1 +1,6 @@
+cd ../../terraform/vpc
+VPC_ID=$(terraform output vpc_id)
+SUBNET_ID=$(terraform output public_subnets |tail -n 1)
+cd -
+
 packer build -var-file=debian.params.json consul.json

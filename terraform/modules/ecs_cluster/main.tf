@@ -7,12 +7,12 @@ variable "subnets" {
 }
 
 variable "ecs_servers" {
-  type = "list"
-  default = [ "ecs0", "ecs1", "ecs2", "ecs3", "ecs4", "ecs5"]
+  type    = "list"
+  default = ["ecs0", "ecs1", "ecs2", "ecs3", "ecs4", "ecs5", "ecs6", "ecs7", "ecs8", "ecs9"]
 }
 
 variable "all_nodes_tasks" {
-  type = "list"
+  type    = "list"
   default = []
 }
 
@@ -60,10 +60,11 @@ variable "ttl" {
 }
 
 variable "dynamic_ports" {
-  type    = "map"
+  type = "map"
+
   default = {
-     min = "32678"
-     max = "61000"
+    min = "32678"
+    max = "61000"
   }
 }
 
@@ -72,7 +73,7 @@ variable "external_ports" {
 }
 
 variable "sg_admin" {
-  type    = "string"
+  type = "string"
 }
 
 variable "admin_ports" {
@@ -81,7 +82,7 @@ variable "admin_ports" {
 }
 
 variable "efs_mount_point" {
-  type = "string"
+  type    = "string"
   default = "/mnt/efs"
 }
 
@@ -118,11 +119,11 @@ resource "aws_security_group_rule" "internal_traffic" {
 }
 
 resource "aws_security_group_rule" "dynamic_ports" {
-  type              = "ingress"
-  from_port         = "${lookup(var.dynamic_ports,"min")}"
-  to_port           = "${lookup(var.dynamic_ports,"max")}"
-  protocol          = "tcp"
-  security_group_id = "${aws_security_group.ecs.id}"
+  type                     = "ingress"
+  from_port                = "${lookup(var.dynamic_ports,"min")}"
+  to_port                  = "${lookup(var.dynamic_ports,"max")}"
+  protocol                 = "tcp"
+  security_group_id        = "${aws_security_group.ecs.id}"
   source_security_group_id = "${aws_security_group.cluster_access.id}"
 }
 
@@ -162,10 +163,10 @@ resource "aws_security_group" "efs_access" {
   vpc_id      = "${var.vpc_id}"
 
   ingress {
-      from_port = 2049
-      to_port = 2049
-      protocol = "tcp"
-      security_groups = ["${aws_security_group.ecs.id}"]
+    from_port       = 2049
+    to_port         = 2049
+    protocol        = "tcp"
+    security_groups = ["${aws_security_group.ecs.id}"]
   }
 
   tags {
@@ -173,9 +174,9 @@ resource "aws_security_group" "efs_access" {
   }
 }
 
-
 resource "aws_efs_file_system" "ecsfs" {
   creation_token = "ecsfs-${var.cluster_name}"
+
   tags {
     Name = "ECS FS for ${var.cluster_name}"
   }
@@ -184,16 +185,18 @@ resource "aws_efs_file_system" "ecsfs" {
 resource "aws_efs_mount_target" "ecsmp" {
   # count = "2"
   count = "${length(var.subnets)}"
+
   # should be length(var.subnets). Not possible with data sources variables today
-  file_system_id = "${aws_efs_file_system.ecsfs.id}"
-  subnet_id = "${var.subnets[count.index]}"
-  security_groups = [ "${aws_security_group.efs_access.id}" ]
+  file_system_id  = "${aws_efs_file_system.ecsfs.id}"
+  subnet_id       = "${var.subnets[count.index]}"
+  security_groups = ["${aws_security_group.efs_access.id}"]
 }
 
 resource "aws_iam_role" "ecs" {
-    name = "${var.cluster_id}_ecs_role"
-    path = "/"
-    assume_role_policy = <<EOF
+  name = "${var.cluster_id}_ecs_role"
+  path = "/"
+
+  assume_role_policy = <<EOF
 {
   "Version": "2012-10-17",
   "Statement": [
@@ -210,9 +213,10 @@ EOF
 }
 
 resource "aws_iam_role_policy" "ecs" {
-    name = "${var.cluster_id}_ecs_role_policy"
-    role = "${aws_iam_role.ecs.id}"
-    policy = <<EOF
+  name = "${var.cluster_id}_ecs_role_policy"
+  role = "${aws_iam_role.ecs.id}"
+
+  policy = <<EOF
 {
     "Statement": [
         {
@@ -241,13 +245,12 @@ EOF
 }
 
 resource "aws_iam_instance_profile" "ecs" {
-    name = "${var.cluster_id}_ecs_profile"
-    role = "${aws_iam_role.ecs.name}"
+  name = "${var.cluster_id}_ecs_profile"
+  role = "${aws_iam_role.ecs.name}"
 }
 
 # Allocate 1 ECS node in each AZ subnet
 module "ecs_servers" {
-
   source          = "../instances"
   ami_id          = "${data.aws_ami.ecs.id}"
   name            = "${slice(var.ecs_servers, 0, length(var.subnets))}"
@@ -267,14 +270,14 @@ module "ecs_servers" {
 data "template_file" "ecs_config" {
   # Explicit dependancy to avoid instance creation before the mount target is ready
   # Could be done in the ecs_servers module when modules support depends_on
-  depends_on = [ "aws_efs_mount_target.ecsmp" ]
+  depends_on = ["aws_efs_mount_target.ecsmp"]
 
   template = "${file("${path.module}/files/config_ecs.tpl.sh")}"
 
   vars {
-    TF_ECS_CLUSTER = "${var.cluster_name}"
+    TF_ECS_CLUSTER     = "${var.cluster_name}"
     TF_ALL_NODES_TASKS = "${join(" ",var.all_nodes_tasks)}"
-    TF_EFS_ID = "${aws_efs_file_system.ecsfs.id}"
+    TF_EFS_ID          = "${aws_efs_file_system.ecsfs.id}"
     TF_EFS_MOUNT_POINT = "${var.efs_mount_point}"
   }
 }
@@ -283,8 +286,22 @@ resource "aws_cloudwatch_log_group" "ecs" {
   name = "${var.cluster_name}"
 }
 
-output cluster { value = "${var.cluster_name}" }
-output cluster_nodes { value = "${slice(var.ecs_servers, 0, length(var.subnets))}" }
-output efs_mount_point { value = "${var.efs_mount_point}" }
-output log_group { value = "${var.cluster_name}" }
-output sg_cluster_access { value = "${aws_security_group.cluster_access.id}" }
+output cluster {
+  value = "${var.cluster_name}"
+}
+
+output cluster_nodes {
+  value = "${slice(var.ecs_servers, 0, length(var.subnets))}"
+}
+
+output efs_mount_point {
+  value = "${var.efs_mount_point}"
+}
+
+output log_group {
+  value = "${var.cluster_name}"
+}
+
+output sg_cluster_access {
+  value = "${aws_security_group.cluster_access.id}"
+}

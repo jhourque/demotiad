@@ -86,12 +86,15 @@ output "vpc_name" {
 output "sg_remote_access" {
   value = "${module.base_network.sg_remote_access}"
 }
+
 output "sg_admin" {
   value = "${module.base_network.sg_admin}"
 }
+
 output "sg_ssh" {
   value = "${module.base_network.sg_ssh}"
 }
+
 output "private_domain_name" {
   value = "${module.private_dns.private_domain_name}"
 }
@@ -107,4 +110,3 @@ output "private_host_zone_reverse" {
 output "dns_servers" {
   value = "${module.private_dns.dns_servers}"
 }
-

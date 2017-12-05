@@ -29,7 +29,7 @@ variable user_data {
 }
 
 variable instance_profile {
-  type = "string"
+  type    = "string"
   default = ""
 }
 
@@ -54,7 +54,7 @@ variable domain_name {
 }
 
 data "template_file" "user_data" {
-  count = "${length(var.name)}"
+  count    = "${length(var.name)}"
   template = "${file("${path.module}/files/hostname.tpl.sh")}"
 
   vars {
@@ -72,7 +72,7 @@ resource "aws_instance" "instance" {
   vpc_security_group_ids = ["${var.security_groups}"]
   user_data              = "${data.template_file.user_data.*.rendered[count.index]}\n${var.user_data}"
 
-  iam_instance_profile   = "${var.instance_profile}"
+  iam_instance_profile = "${var.instance_profile}"
 
   tags {
     Name = "${var.name[count.index]}"
@@ -80,7 +80,7 @@ resource "aws_instance" "instance" {
 }
 
 resource "aws_route53_record" "dns_record" {
-  count = "${length(var.name)}"
+  count   = "${length(var.name)}"
   zone_id = "${var.private_zone_id}"
   name    = "${var.name[count.index]}"
   type    = "A"
@@ -89,7 +89,7 @@ resource "aws_route53_record" "dns_record" {
 }
 
 resource "aws_route53_record" "dns_reverse" {
-  count = "${length(var.name)}"
+  count   = "${length(var.name)}"
   zone_id = "${var.reverse_zone_id}"
   name    = "${replace(aws_instance.instance.*.private_ip[count.index],"/([0-9]+).([0-9]+).([0-9]+).([0-9]+)/","$4.$3")}"
   type    = "PTR"
@@ -100,6 +100,7 @@ resource "aws_route53_record" "dns_reverse" {
 output "public_ip" {
   value = ["${aws_instance.instance.*.public_ip}"]
 }
+
 output "private_ip" {
   value = ["${aws_instance.instance.*.private_ip}"]
 }

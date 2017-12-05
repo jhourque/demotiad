@@ -14,7 +14,7 @@ resource "aws_route53_zone" "private_reverse" {
 
 resource "aws_vpc_dhcp_options" "dns_resolver" {
   domain_name_servers = ["${cidrhost(var.vpc_cidr, "2") }"]
-  domain_name = "${var.private_domain_name}"
+  domain_name         = "${var.private_domain_name}"
 
   tags {
     Name = "${var.private_domain_name} PRIVATE DNS"

@@ -1,0 +1,4 @@
+region = "eu-central-1"
+color = "blue"
+state_bucket = "tiad-tfstate"
+ecs_state_key = "ecs.tfstate"
