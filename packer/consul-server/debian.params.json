@@ -3,5 +3,5 @@
     "aws_source_ami":"ami-5900cc36",
     "distribution":"debian",
     "role":"consul",
-    "consul_version":"0.7.0"
+    "consul_version":"1.0.1"
 }

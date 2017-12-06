@@ -14,4 +14,4 @@ consul_state_key = "consul.tfstate"
 ecs_state_key = "ecs.tfstate"
 dns_alias = "dday"
 
-consul_version ="0.7.0"
+consul_version ="1.0.1"

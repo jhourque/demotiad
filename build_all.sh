@@ -62,3 +62,12 @@ terraform apply -var voteapp_tag=0.1 -auto-approve
 cd ../green
 ./init
 terraform apply -var voteapp_tag=0.1 -auto-approve
+
+echo ################ Deploy complete ################
+cd ../../backends
+echo vote url:
+terraform output vote_url
+
+cd ../../vpc
+echo bastion IP:
+terraform output bastion_ip
